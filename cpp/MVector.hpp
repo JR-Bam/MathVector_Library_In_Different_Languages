@@ -46,15 +46,18 @@ namespace MVec
         Vector operator-(Vector const& rhs);
     };
 
-    // ### Checks if two vectors have the same size
-    bool sameSize(const Vector* lhs, const Vector* rhs);
-    // ### Returns the axpy
-    // defined by: `axpy = (scalar * lhs) + rhs`
-    // 
-    // > Exceptions: MVectorException
-    Vector axpy(const float scalar, const Vector* lhs, const Vector* rhs);
-    // ### Returns the dot product between two vectors.
-    // Exceptions: MVectorException
-    float dot(const Vector* lhs, const Vector* rhs);
+    namespace VecOps{
+        // ### Checks if two vectors have the same size
+        bool sameSize(const Vector* lhs, const Vector* rhs);
+        // ### Returns the axpy
+        // defined by: `axpy = (scalar * lhs) + rhs`
+        // 
+        // > Exceptions: MVectorException
+        Vector axpy(const float scalar, const Vector* lhs, const Vector* rhs);
+        // ### Returns the dot product between two vectors.
+        // Exceptions: MVectorException
+        float dot(const Vector* lhs, const Vector* rhs);
+    } // namespace VecOps
+    
 
 } // namespace MVec

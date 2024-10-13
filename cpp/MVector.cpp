@@ -2,12 +2,12 @@
 #include <math.h>
 #include <iostream>
 
-bool MVec::sameSize(Vector const *lhs, Vector const *rhs)
+bool MVec::VecOps::sameSize(Vector const *lhs, Vector const *rhs)
 {
     return lhs->size == rhs->size;
 }
 
-MVec::Vector MVec::axpy(const float scalar, const Vector* lhs, const Vector* rhs)
+MVec::Vector MVec::VecOps::axpy(const float scalar, const Vector* lhs, const Vector* rhs)
 {
     if (lhs->size != rhs->size)
         throw MVectorException("SizeMismatch: Vectors do not have the same size", MVec::MVectorException::Type::SizeMismatch);
@@ -22,7 +22,7 @@ MVec::Vector MVec::axpy(const float scalar, const Vector* lhs, const Vector* rhs
     return newVec;
 }
 
-float MVec::dot(const Vector *lhs, const Vector *rhs)
+float MVec::VecOps::dot(const Vector *lhs, const Vector *rhs)
 {
     if (lhs->size != rhs->size)
         throw MVectorException("SizeMismatch: Vectors do not have the same size", MVec::MVectorException::Type::SizeMismatch);

@@ -14,9 +14,9 @@ int main(){
     std::cout << "Vec2: ";
     vec2.print();
 
-    std::cout << "Dot Product: " << MVec::dot(&vec1, &vec2) << "\n";
+    std::cout << "Dot Product: " << MVec::VecOps::dot(&vec1, &vec2) << "\n";
     std::cout << "AXPY with alpha = -5: ";
-    MVec::axpy(-5.0f, &vec1, &vec2).print();
+    MVec::VecOps::axpy(-5.0f, &vec1, &vec2).print();
     std::cout << "Vec1 + Vec2 = ";
     vec3.print(); 
     std::cout << "Vec1 - Vec2 = ";

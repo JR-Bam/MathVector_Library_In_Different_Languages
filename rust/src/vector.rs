@@ -1,177 +1,159 @@
-use std::ops;
 use std::fmt;
 
 // Define an error type
 #[derive(Debug)]
 pub enum MVectorError {
     SizeMismatch,
-    DirectionMismatch
+    OutOfBounds
 }
 
-// Implement Display for better error messages
 impl fmt::Display for MVectorError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            MVectorError::SizeMismatch => write!(f, "Size mismatch between vectors"),
-            MVectorError::DirectionMismatch => write!(f, "Direction mismatch between vectors"),
-        }
-    }
-}
-
-
-#[derive(Debug, PartialEq, Eq)]
-enum Direction {
-    Vertical,
-    Horizontal
-}
-
-impl Direction {
-    fn flip(&mut self) {
-        *self = match *self {
-            Direction::Horizontal => Direction::Vertical,
-            Direction::Vertical => Direction::Horizontal,
-        };
-    }
-}
-
-impl Clone for Direction {
-    fn clone(&self) -> Self {
-        match self {
-            Self::Vertical => Self::Vertical,
-            Self::Horizontal => Self::Horizontal,
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct MVector {
-    components: Vec<i32>,
-    size: usize,
-    direction: Direction
-}
-
-impl fmt::Display for MVector {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self.components)
+        match self {
+            MVectorError::SizeMismatch => write!(f, "SizeMismatch: Vectors do not have the same size"),
+            MVectorError::OutOfBounds => write!(f, "OutOfBounds: index is out of bounds from Vector"),
+        }
     }
 }
 
-impl MVector {
-    fn same_size(&self, other: &MVector) -> bool {
-        self.size == other.size
+pub mod mvec {
+    use core::fmt;
+    use super::MVectorError;
+
+    #[derive(PartialEq)]
+    pub struct Vector {
+        components: Vec<f32>,
+        size: usize
     }
 
-    fn zip_with<F>(&self, other: &MVector, mut f: F) -> Vec<i32>
-    where
-        F: FnMut(i32, i32) -> i32,
-    {
-        self.components
-            .iter()
-            .zip(other.components.iter())
-            .map(|(&a, &b)| f(a, b)) // Apply the closure `f` on each pair
-            .collect()
-    }
-}
-
-
-impl MVector {
-    pub fn new(numbers: Vec<i32>) -> Self {
-        Self {
-            size: numbers.len(),
-            components: numbers, 
-            direction: Direction::Vertical
-        }
-    }
-    pub fn new_zero(size: usize) -> Self {
-        Self {
-            components: vec![0; size],
-            size,
-            direction: Direction::Vertical
+    impl fmt::Display for Vector {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            write!(f, "{:?}", self.components)
         }
     }
 
-    pub fn transpose(&mut self) {
-        self.direction.flip();
+    impl Vector {
+        pub fn new(components: Vec<f32>) -> Self {
+            Self { 
+                size: components.len(),
+                components, 
+            }
+        }
+
+        pub fn scale(&mut self, scalar: f32){
+            for component in self.components.iter_mut() {
+                *component *= scalar;
+            }
+        }
+
+        pub fn at(&self, index: usize) -> Result<f32, MVectorError> {
+            if index >= self.size {
+                return Err(MVectorError::OutOfBounds);
+            }
+
+            Ok(self.components[index])
+        }
+
+        pub fn at_ref(&self, index: usize) -> Result<&f32, MVectorError>{
+            if index >= self.size {
+                return Err(MVectorError::OutOfBounds);
+            }
+
+            Ok(&self.components[index])
+        }
+
+        pub fn magnitude(&self) -> f32 {
+            let mut result: f32 = 0.0;
+            self.components.iter().for_each(|comp| result += comp * comp);
+            f32::sqrt(result)
+        }
+
+        pub fn normalize(&mut self){
+            let normalizing_constant = self.magnitude();
+            self.components.iter_mut().for_each(|comp| *comp /= normalizing_constant);
+        }
+
     }
 
-    pub fn scale(&self, alpha: i32) -> MVector {
-        let mut new_components = self.components.clone();
+    
+    // ### Non standard operations on the `mvec::Vector` struct
+    pub mod vec_ops {
+        use std::ops;
 
-        new_components.iter_mut()
-            .take(self.size)
-            .for_each(|component| {
-                *component *= alpha;
-            });
+        use crate::vector::MVectorError;
+        use super::Vector;
 
-        MVector {
-            components: new_components,
-            size: self.size,
-            direction: self.direction.clone()
+        pub fn axpy(lhs: &Vector, rhs: &Vector, scalar: f32) -> Result<Vector, MVectorError>{
+            if !same_size(lhs, rhs) {
+                return Err(MVectorError::SizeMismatch);
+            }
+
+            let mut result: Vector = Vector::new(lhs.components.clone());
+            result.scale(scalar);
+            result.components.iter_mut()
+                .zip(rhs.components.iter())
+                .for_each(|(x, y)| *x += *y);
+
+            Ok(result)
         }
-    }
+        
+        pub fn dot(lhs: &Vector, rhs: &Vector) -> Result<f32, MVectorError> {
+            if !same_size(lhs, rhs) {
+                return Err(MVectorError::SizeMismatch);
+            }
 
-    pub fn axpy(&self, alpha: i32, other: &MVector) -> Result<MVector, MVectorError>{
-        if !self.same_size(other) {
-            return Err(MVectorError::SizeMismatch);
-        }
-        if self.direction != other.direction {
-            return Err(MVectorError::DirectionMismatch)
-        }
-        let scaled_self = self.scale(alpha);
-        Ok((&scaled_self + other).unwrap())
-    }
+            let mut result: f32 = 0.0;
+            lhs.components.iter()
+                .zip(rhs.components.iter())
+                .for_each(|(x, y)| result += x * y);
 
-    pub fn dot_product(&self, other: &MVector) -> Result<MVector, MVectorError>{
-        if !self.same_size(other) {
-            return Err(MVectorError::SizeMismatch);
-        }
-        if self.direction != other.direction {
-            return Err(MVectorError::DirectionMismatch)
-        }
-
-        Ok(MVector { 
-            components: self.zip_with(other, |a, b| a * b),
-            size: self.size, 
-            direction: self.direction.clone(), 
-        })
-    }
-
-}
-
-impl<'a> ops::Add<&'a MVector> for &'a MVector {
-    type Output = Result<MVector, MVectorError>;
-
-    fn add(self, rhs: &'a MVector) -> Self::Output {
-        if !self.same_size(rhs) {
-            return Err(MVectorError::SizeMismatch);
-        }
-        if self.direction != rhs.direction {
-            return Err(MVectorError::DirectionMismatch)
+            Ok(result)
         }
 
-        Ok(MVector {
-            components: self.zip_with(rhs, |a, b| a + b),
-            size: self.size, 
-            direction: self.direction.clone(), 
-        })
-    }
-}
-
-impl<'a> ops::Sub<&'a MVector> for &'a MVector {
-    type Output = Result<MVector, MVectorError>;
-
-    fn sub(self, rhs: &'a MVector) -> Self::Output {
-        if !self.same_size(rhs) {
-            return Err(MVectorError::SizeMismatch);
-        }
-        if self.direction != rhs.direction {
-            return Err(MVectorError::DirectionMismatch)
+        pub fn same_size(lhs: &Vector, rhs: &Vector) -> bool {
+            lhs.size == rhs.size
         }
 
-        Ok(MVector {
-            components: self.zip_with(rhs, |a, b| a - b),
-            size: self.size,
-            direction: self.direction.clone()
-        })
+        impl<'a, 'b> ops::Add<&'b Vector> for &'a Vector {
+            type Output = Result<Vector, MVectorError>;
+
+            fn add(self, rhs: &'b Vector) -> Self::Output {
+                if !same_size(self, rhs) {
+                    return Err(MVectorError::SizeMismatch);
+                }
+                let mut sum = Vector::new(self.components.clone());
+                sum.components.iter_mut()
+                    .zip(rhs.components.iter())
+                    .for_each(|(x, y)| *x += *y);
+                Ok(sum)
+            }
+        }
+
+        impl<'a, 'b> ops::Sub<&'b Vector> for &'a Vector {
+            type Output = Result<Vector, MVectorError>;
+        
+            fn sub(self, rhs: &'b Vector) -> Self::Output {
+                if !same_size(self, rhs) {
+                    return Err(MVectorError::SizeMismatch);
+                }
+                let mut difference = Vector::new(self.components.clone());
+                difference.components.iter_mut()
+                    .zip(rhs.components.iter())
+                    .for_each(|(x, y)| *x -= *y);
+                Ok(difference)
+            }
+        }
+
+        impl ops::Add for Vector {
+            type Output = Result<Vector, MVectorError>;
+        
+            fn add(self, rhs: Self) -> Self::Output { &self + &rhs }
+        }
+
+        impl ops::Sub for Vector {
+            type Output = Result<Vector, MVectorError>;
+            
+            fn sub(self, rhs: Self) -> Self::Output { &self - &rhs }
+        }
     }
 }

@@ -20,7 +20,7 @@
 
 ### Languages
 - [x] C++
-- [ ] Rust
+- [x] Rust
 - [ ] Haskell
 - [ ] Go
 - [ ] Kotlin
