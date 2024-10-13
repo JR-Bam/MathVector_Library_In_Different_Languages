@@ -22,5 +22,5 @@
 - [x] C++
 - [x] Rust
 - [ ] Haskell
-- [ ] Go
+- [x] Go
 - [ ] Kotlin
