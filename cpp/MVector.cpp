@@ -60,21 +60,12 @@ float &MVec::Vector::at(size_t index) {
 
 float MVec::Vector::magnitude()
 {
-    float result = 0;
-    for (float& component : components){
-        result += (component * component);
-    }
-    result = sqrt(result);
-    return result;
+    return sqrt(VecOps::dot(this, this));
 }
 
 void MVec::Vector::normalize()
 {
-    const float normalizing_constant = magnitude();
-
-    for (float& component : components){
-        component /= normalizing_constant;
-    }
+    scale(1 / magnitude());
 }
 
 void MVec::Vector::print()

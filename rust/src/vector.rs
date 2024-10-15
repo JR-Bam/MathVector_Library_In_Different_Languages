@@ -18,6 +18,8 @@ impl fmt::Display for MVectorError {
 
 pub mod mvec {
     use core::fmt;
+    use vec_ops::dot;
+
     use super::MVectorError;
 
     #[derive(PartialEq)]
@@ -63,14 +65,11 @@ pub mod mvec {
         }
 
         pub fn magnitude(&self) -> f32 {
-            let mut result: f32 = 0.0;
-            self.components.iter().for_each(|comp| result += comp * comp);
-            f32::sqrt(result)
+            f32::sqrt(dot(self, self).unwrap())
         }
 
         pub fn normalize(&mut self){
-            let normalizing_constant = self.magnitude();
-            self.components.iter_mut().for_each(|comp| *comp /= normalizing_constant);
+            self.scale(1.0 / self.magnitude());
         }
 
     }

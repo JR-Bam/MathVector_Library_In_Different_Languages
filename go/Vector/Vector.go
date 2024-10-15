@@ -44,17 +44,66 @@ func (v *Vector) At(index int) (float32, error) {
 }
 
 func (v *Vector) Magnitude() float32 {
-	var result float32 = 0
-	for i := 0; i < len(v.Components); i++ {
-		component, _ := v.At(i)
-		result += component * component
-	}
-	return float32(math.Sqrt(float64(result)))
+	dot_product, _ := Dot(v, v)
+	return float32(math.Sqrt(float64(dot_product)))
 }
 
 func (v *Vector) Normalize() {
-	normalizing_constant := v.Magnitude()
-	for i := 0; i < len(v.Components); i++ {
-		v.Components[i] /= normalizing_constant
+	v.Scale(1 / v.Magnitude())
+}
+
+func Axpy(lhs *Vector, rhs *Vector, scalar float32) (Vector, error) {
+	if !SameSize(lhs, rhs) {
+		return Vector{}, errors.New("SizeMismatch: Vectors do not have the same size")
 	}
+	result := NewVector(make([]float32, lhs.Size))
+	for i := 0; i < lhs.Size; i++ {
+		result.Components[i] = lhs.Components[i]*scalar + rhs.Components[i]
+	}
+	return result, nil
+}
+
+func Dot(lhs *Vector, rhs *Vector) (float32, error) {
+	if !SameSize(lhs, rhs) {
+		return 0, errors.New("SizeMismatch: Vectors do not have the same size")
+	}
+	var result float32 = 0
+	for i := 0; i < lhs.Size; i++ {
+		result += lhs.Components[i] * rhs.Components[i]
+	}
+	return result, nil
+}
+
+func SameSize(lhs *Vector, rhs *Vector) bool {
+	return lhs.Size == rhs.Size
+}
+
+func AddBorrow(lhs *Vector, rhs *Vector) (Vector, error) {
+	if !SameSize(lhs, rhs) {
+		return Vector{}, errors.New("SizeMismatch: Vectors do not have the same size")
+	}
+	result := NewVector(make([]float32, lhs.Size))
+	for i := 0; i < lhs.Size; i++ {
+		result.Components[i] = lhs.Components[i] + rhs.Components[i]
+	}
+	return result, nil
+}
+
+func SubBorrow(lhs *Vector, rhs *Vector) (Vector, error) {
+	if !SameSize(lhs, rhs) {
+		return Vector{}, errors.New("SizeMismatch: Vectors do not have the same size")
+	}
+	result := NewVector(make([]float32, lhs.Size))
+	for i := 0; i < lhs.Size; i++ {
+		result.Components[i] = lhs.Components[i] - rhs.Components[i]
+	}
+	return result, nil
+}
+
+func Add(lhs Vector, rhs Vector) (Vector, error) {
+	return AddBorrow(&lhs, &rhs)
+}
+
+func Sub(lhs Vector, rhs Vector) (Vector, error) {
+	return SubBorrow(&lhs, &rhs)
 }
