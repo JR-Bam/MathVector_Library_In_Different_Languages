@@ -9,7 +9,7 @@ bool MVec::VecOps::sameSize(Vector const *lhs, Vector const *rhs)
 
 MVec::Vector MVec::VecOps::axpy(const float scalar, const Vector* lhs, const Vector* rhs)
 {
-    if (lhs->size != rhs->size)
+    if (!sameSize(lhs, rhs))
         throw MVectorException("SizeMismatch: Vectors do not have the same size", MVec::MVectorException::Type::SizeMismatch);
     
     Vector newVec = Vector(lhs->components);
@@ -24,7 +24,7 @@ MVec::Vector MVec::VecOps::axpy(const float scalar, const Vector* lhs, const Vec
 
 float MVec::VecOps::dot(const Vector *lhs, const Vector *rhs)
 {
-    if (lhs->size != rhs->size)
+    if (!sameSize(lhs, rhs))
         throw MVectorException("SizeMismatch: Vectors do not have the same size", MVec::MVectorException::Type::SizeMismatch);
     
     float result = 0;
