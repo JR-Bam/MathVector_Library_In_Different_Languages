@@ -23,4 +23,4 @@
 - [x] Rust
 - [ ] Haskell
 - [x] Go
-- [ ] Kotlin
+- [x] Kotlin
