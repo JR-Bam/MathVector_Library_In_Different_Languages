@@ -21,6 +21,6 @@
 ### Languages
 - [x] C++
 - [x] Rust
-- [ ] Haskell
+- [x] Haskell
 - [x] Go
 - [x] Kotlin
