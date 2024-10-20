@@ -1,7 +1,7 @@
 module Main where
 
 
-import Vector (vecFromList, normalize, magnitude, dot, axpy)
+import Mvec (vecFromList, normalize, magnitude, dot, axpy)
 
 main :: IO ()
 main = do

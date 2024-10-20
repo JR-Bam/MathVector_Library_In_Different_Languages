@@ -1,4 +1,4 @@
-module Vector where
+module Mvec where
 
 data Vector = Vector {
     size :: Int,
