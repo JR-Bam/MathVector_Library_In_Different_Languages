@@ -10,10 +10,10 @@ instance Show Vector where
 
 instance Num Vector where
     v1 + v2 | sameSize v1 v2 = Vector (size v1) (zipWith (+) (components v1) (components v2))
-            | otherwise      = error "Errors must be same size"
+            | otherwise      = error "Vectors must be of same size"
     
     v1 - v2 | sameSize v1 v2 = Vector (size v1) (zipWith (-) (components v1) (components v2))
-            | otherwise      = error "Errors must be same size"
+            | otherwise      = error "Vectors must be of same size"
 
 vecFromList :: [Float] -> Vector
 vecFromList [] = error "List must be nonempty."
@@ -36,9 +36,9 @@ sameSize (Vector s1 _) (Vector s2 _) = s1 == s2
 dot :: Vector -> Vector -> Float
 dot v1 v2 
     | sameSize v1 v2 = sum $ zipWith (*) (components v1) (components v2)
-    | otherwise      = error "Errors must be same size"
+    | otherwise      = error "Vectors must be of same size"
 
 axpy :: Float -> Vector -> Vector -> Vector
 axpy alpha v1 v2 
     | sameSize v1 v2 = Vector (size v1) (zipWith (\x y -> x * alpha + y) (components v1) (components v2))
-    | otherwise      = error "Errors must be same size"
+    | otherwise      = error "Vectors must be of same size"
